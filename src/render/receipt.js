@@ -104,9 +104,11 @@ export function buildLines(report) {
       L.push(item(m.model, compact(m.tokens), m.priced ? plain(m.cost) + (m.partial ? '*' : '') : 'unpriced', { indent: true }));
     }
   }
-  L.push(rule());
-  L.push(leader('SUBTOTAL', plain(totals.cost)));
-  if (totals.unpricedTokens > 0) L.push(leader('UNPRICED TOKENS', compact(totals.unpricedTokens)));
+  // no SUBTOTAL: with nothing between it and the TOTAL it only repeated the same number
+  if (totals.unpricedTokens > 0) {
+    L.push(rule());
+    L.push(leader('UNPRICED TOKENS', compact(totals.unpricedTokens)));
+  }
   L.push(rule('='));
   L.push({ ...leader('TOTAL AT API LIST PRICE', usd(totals.cost), { tone: 'bold', rightTone: 'accent', dots: false }), size: 'tall' });
   L.push(rule('='));

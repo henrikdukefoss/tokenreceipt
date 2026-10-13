@@ -1,0 +1,1 @@
+{"id":"msg_sample_36","sessionID":"ses_sample_1","role":"assistant","modelID":"glm-5.3","providerID":"zai","time":{"created":1790364141000,"completed":1790364150000},"cost":0,"tokens":{"input":5455,"output":2339,"reasoning":363,"cache":{"read":75676,"write":0}}}

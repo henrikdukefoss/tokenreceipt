@@ -1,0 +1,5 @@
+{"type":"session","version":3,"id":"s2","timestamp":"2026-09-22T09:00:00.000Z","cwd":"/Users/demo/app","parentSession":"s1"}
+{"type":"model_change","id":"e0","parentId":null,"timestamp":"2026-09-22T08:00:00.500Z","provider":"anthropic","modelId":"claude-sonnet-4-5"}
+{"type":"message","id":"e1","parentId":"e0","timestamp":"2026-09-22T08:00:01.000Z","message":{"role":"user","content":"hi","timestamp":1790064001000}}
+{"type":"message","id":"e2","parentId":"e1","timestamp":"2026-09-22T08:00:05.000Z","message":{"role":"assistant","api":"anthropic-messages","provider":"anthropic","model":"claude-sonnet-4-5","usage":{"input":40,"output":900,"cacheRead":30000,"cacheWrite":4000,"cacheWrite1h":1000,"totalTokens":34940,"cost":{"total":0.03}},"stopReason":"stop","timestamp":1790064002000}}
+{"type":"message","id":"f1","parentId":"e2","timestamp":"2026-09-22T09:00:05.000Z","message":{"role":"assistant","provider":"openai","model":"gpt-5","usage":{"input":2000,"output":300,"cacheRead":0,"cacheWrite":0,"totalTokens":2300},"timestamp":1790067605000}}

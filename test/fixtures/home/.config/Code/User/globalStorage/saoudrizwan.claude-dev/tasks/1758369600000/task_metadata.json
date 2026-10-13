@@ -1,0 +1,11 @@
+{
+ "files_in_context": [],
+ "model_usage": [
+  {
+   "ts": 1758369500000,
+   "model_id": "claude-haiku-4-5",
+   "model_provider_id": "anthropic",
+   "mode": "act"
+  }
+ ]
+}

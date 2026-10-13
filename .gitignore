@@ -1,0 +1,7 @@
+node_modules/
+.DS_Store
+# receipts you generate locally contain your own usage numbers
+*.svg
+*.png
+!docs/*.svg
+!docs/*.png

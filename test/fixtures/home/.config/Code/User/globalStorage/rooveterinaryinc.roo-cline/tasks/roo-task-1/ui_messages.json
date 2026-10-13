@@ -1,0 +1,14 @@
+[
+ {
+  "ts": 1758000001000,
+  "type": "say",
+  "say": "api_req_started",
+  "text": "{\"tokensIn\": 1000, \"tokensOut\": 300, \"cacheWrites\": 2000, \"cacheReads\": 8000, \"cost\": 0.01, \"apiProtocol\": \"anthropic\"}"
+ },
+ {
+  "ts": 1767225601000,
+  "type": "say",
+  "say": "api_req_started",
+  "text": "{\"tokensIn\": 12000, \"tokensOut\": 300, \"cacheWrites\": 1000, \"cacheReads\": 9000, \"cost\": 0.01, \"apiProtocol\": \"anthropic\"}"
+ }
+]

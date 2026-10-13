@@ -1,0 +1,44 @@
+        T O K E N   R E C E I P T
+   LOCAL AGENT USAGE AT API LIST PRICES
+
+2026-10-01 09:41             RCPT 1B6765FF
+CASHIER                 TOKENRECEIPT 0.1.0
+PERIOD           2026-09-01 TO 10-01 (30D)
+------------------------------------------
+ITEM                     TOKENS        USD
+
+CODEX CLI ..............  19.4M      58.25
+  gpt-6-astra ..........  13.3M      53.04
+  gpt-5.6-terra ........   6.1M       5.22
+
+CLAUDE CODE ............  92.1M      48.55
+  claude-sonnet-5 ......  66.0M      31.19
+  claude-opus-5-5 ......  22.0M      17.22
+  claude-haiku-5-5 .....   4.0M       0.14
+
+OPENCODE ...............   6.9M       3.26
+  glm-5.3 ..............   4.7M       1.75
+  kimi-k3 ..............   2.2M       1.51
+
+GEMINI CLI .............   3.1M       3.10
+  gemini-3.5-flash .....   3.1M       3.10
+------------------------------------------
+SUBTOTAL .......................... 113.16
+==========================================
+TOTAL AT API LIST PRICE            $113.16
+==========================================
+REQUESTS ........................... 1,085
+TOKENS ....................... 121,494,391
+  CACHE READS ................ 110,441,511
+------------------------------------------
+
+   Thank you for burning 121.5M tokens
+
+                *1B6765FF*
+
+   PRICES: LITELLM (BUNDLED) 2026-10-01
+
+        TOKENRECEIPT, OPEN SOURCE
+         MADE BY STANDARD COMPUTE
+  FLAT MONTHLY PLANS FOR AGENT WORKLOADS
+           STANDARDCOMPUTE.COM

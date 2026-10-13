@@ -1,0 +1,29 @@
+{
+ "sessionId": "old00001",
+ "projectHash": "0f3c9a",
+ "startTime": "2026-03-01T09:00:00.000Z",
+ "lastUpdated": "2026-03-01T09:10:00.000Z",
+ "messages": [
+  {
+   "id": "o1",
+   "timestamp": "2026-03-01T09:00:02.000Z",
+   "type": "user",
+   "content": "hello"
+  },
+  {
+   "id": "o2",
+   "timestamp": "2026-03-01T09:00:05.000Z",
+   "type": "gemini",
+   "content": "hi",
+   "model": "gemini-2.5-flash",
+   "tokens": {
+    "input": 3000,
+    "output": 100,
+    "cached": 0,
+    "thoughts": 50,
+    "tool": 0,
+    "total": 3150
+   }
+  }
+ ]
+}

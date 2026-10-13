@@ -1,0 +1,32 @@
+[
+ {
+  "role": "user",
+  "ts": 1758000000000,
+  "content": [
+   {
+    "type": "text",
+    "text": "task\n<environment_details>\n<model>claude-sonnet-4-5</model>\n</environment_details>"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "ts": 1758000001500,
+  "content": [
+   {
+    "type": "text",
+    "text": "ok"
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "ts": 1767225600000,
+  "content": [
+   {
+    "type": "text",
+    "text": "<environment_details>\n# Current Mode\n<model>claude-haiku-4-5</model>\n</environment_details>"
+   }
+  ]
+ }
+]

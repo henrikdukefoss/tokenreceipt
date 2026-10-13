@@ -1,0 +1,5 @@
+{
+ "provider": "openai",
+ "model": "gpt-5",
+ "started_at": "2026-09-21T10:00:00Z"
+}

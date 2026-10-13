@@ -1,0 +1,1 @@
+{"id": "msg_oc1", "sessionID": "ses_demo", "role": "assistant", "modelID": "claude-sonnet-4-5", "providerID": "anthropic", "time": {"created": 1758369600000, "completed": 1758369601000}, "cost": 0.01, "tokens": {"input": 400, "output": 800, "reasoning": 0, "cache": {"read": 60000, "write": 6000}}}

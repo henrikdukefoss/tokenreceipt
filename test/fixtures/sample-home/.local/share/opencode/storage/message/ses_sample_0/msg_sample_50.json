@@ -1,0 +1,1 @@
+{"id":"msg_sample_50","sessionID":"ses_sample_0","role":"assistant","modelID":"kimi-k3","providerID":"moonshot","time":{"created":1788962123000,"completed":1788962132000},"cost":0,"tokens":{"input":4459,"output":2083,"reasoning":638,"cache":{"read":128490,"write":0}}}

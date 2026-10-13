@@ -1,0 +1,5 @@
+CREATE TABLE `message` (`id` text PRIMARY KEY, `session_id` text NOT NULL, `time_created` integer NOT NULL, `time_updated` integer NOT NULL, `data` text NOT NULL);
+INSERT INTO message VALUES ('msg_db1','ses_1',1758369600000,1758369600000,'{"role":"assistant","modelID":"gpt-5","providerID":"openai","time":{"created":1758369600000},"cost":0,"tokens":{"total":0,"input":1000,"output":200,"reasoning":100,"cache":{"read":9000,"write":0}}}');
+INSERT INTO message VALUES ('msg_db2','ses_1',1758369650000,1758369650000,'{"role":"user","time":{"created":1758369650000}}');
+INSERT INTO message VALUES ('msg_db3','ses_1',1758369700000,1758369700000,'{"role":"assistant","modelID":"anthropic/claude-sonnet-4.5","providerID":"openrouter","time":{"created":1758369700000},"cost":0,"tokens":{"input":10,"output":20,"reasoning":0,"cache":{"read":3000,"write":500}}}');
+INSERT INTO message VALUES ('msg_db4','ses_1',1600000000000,1600000000000,'{"role":"assistant","modelID":"gpt-5","providerID":"openai","time":{"created":1600000000000},"tokens":{"input":5,"output":5,"reasoning":0,"cache":{"read":0,"write":0}}}');

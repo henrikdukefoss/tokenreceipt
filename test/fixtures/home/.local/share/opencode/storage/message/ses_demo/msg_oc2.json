@@ -1,0 +1,1 @@
+{"id": "msg_oc2", "sessionID": "ses_demo", "role": "assistant", "modelID": "standardcompute", "providerID": "standardcompute", "time": {"created": 1758369700000, "completed": 1758369701000}, "cost": 0.01, "tokens": {"input": 1000, "output": 2000, "reasoning": 500, "cache": {"read": 90000, "write": 0}}}

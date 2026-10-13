@@ -1,0 +1,9 @@
+[
+ {
+  "sessionId": "abcd1234",
+  "messageId": 0,
+  "type": "user",
+  "message": "hi",
+  "timestamp": "2026-09-20T10:00:01.000Z"
+ }
+]

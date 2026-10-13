@@ -1,0 +1,48 @@
+{
+ "version": 1,
+ "updated_at": "2026-09-21T10:00:00Z",
+ "agent": "cline",
+ "sessionId": "sess_sdk1",
+ "origin": "cli",
+ "messages": [
+  {
+   "id": "m0",
+   "role": "assistant",
+   "content": [],
+   "modelInfo": {
+    "id": "claude-sonnet-4-5",
+    "provider": "unknown"
+   },
+   "metrics": {
+    "inputTokens": 999999,
+    "outputTokens": 99999,
+    "cacheReadTokens": 0,
+    "cacheWriteTokens": 0,
+    "cost": 9
+   }
+  },
+  {
+   "id": "m1",
+   "role": "user",
+   "content": "go",
+   "ts": 1758456000000
+  },
+  {
+   "id": "m2",
+   "role": "assistant",
+   "content": [],
+   "ts": 1758456005000,
+   "modelInfo": {
+    "id": "gpt-5",
+    "provider": "openai"
+   },
+   "metrics": {
+    "inputTokens": 30000,
+    "outputTokens": 1500,
+    "cacheReadTokens": 20000,
+    "cacheWriteTokens": 0,
+    "cost": 0.02
+   }
+  }
+ ]
+}

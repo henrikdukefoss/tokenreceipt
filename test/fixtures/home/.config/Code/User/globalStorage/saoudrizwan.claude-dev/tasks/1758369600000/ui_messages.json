@@ -1,0 +1,43 @@
+[
+ {
+  "ts": 1758369600000,
+  "type": "say",
+  "say": "task",
+  "text": "do it"
+ },
+ {
+  "ts": 1758369601000,
+  "type": "say",
+  "say": "api_req_started",
+  "text": "{\"tokensIn\": 1200, \"tokensOut\": 400, \"cacheWrites\": 5000, \"cacheReads\": 20000, \"cost\": 0.01}",
+  "modelInfo": {
+   "modelId": "claude-sonnet-4-5",
+   "providerId": "anthropic",
+   "mode": "act"
+  }
+ },
+ {
+  "ts": 1758369602000,
+  "type": "say",
+  "say": "api_req_started",
+  "text": "{\"request\": \"...\"}"
+ },
+ {
+  "ts": 1758369603000,
+  "type": "say",
+  "say": "api_req_started",
+  "text": "{\"tokensIn\": 300, \"tokensOut\": 100, \"cacheWrites\": 0, \"cacheReads\": 25000, \"cost\": 0.01}"
+ },
+ {
+  "ts": 1758369604000,
+  "type": "say",
+  "say": "subagent_usage",
+  "text": "{\"tokensIn\": 500, \"tokensOut\": 200, \"cacheWrites\": 0, \"cacheReads\": 0, \"cost\": 0.01, \"source\": \"subagents\"}"
+ },
+ {
+  "ts": 1758369605000,
+  "type": "say",
+  "say": "text",
+  "text": "ok"
+ }
+]

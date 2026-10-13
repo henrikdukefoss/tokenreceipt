@@ -149,7 +149,7 @@ counting and pricing do not depend on which provider you use.
 git clone https://github.com/henrikdukefoss/tokenreceipt
 cd tokenreceipt
 npm test                 # node:test, no install step
-node bin/tokenreceipt.js --since all
+node bin/tokenreceipt.js --since all   # the card notes "ALL AVAILABLE LOCAL LOGS": only logs still on this machine are counted
 ```
 
 - Readers live in `src/readers/`. Each one exports `id`, `name` and `load({ sinceMs, untilMs, env })`

@@ -96,3 +96,13 @@ test('cli: no logs found is not an error', () => {
 test('cli: bad flag exits 2', () => {
   assert.throws(() => run(['--since', 'yesterday']), (e) => e.status === 2);
 });
+
+test('--since all receipts say they cover all available local logs', async () => {
+  const { buildLines } = await import('../src/render/receipt.js');
+  const text = (lines) => lines.map((l) => (l.segs || []).map((s) => s.text ?? s).join('')).join('\n');
+  const base = { agents: [], totals: { tokens: 0, cost: 0, requests: 0, cacheRead: 0, unpricedTokens: 0 }, printedAt: new Date('2026-10-13T12:00:00Z'), prices: { source: 'bundled', date: '2026-10-01' }, version: '0.1.0' };
+  const all = text(buildLines({ ...base, period: parsePeriod('all', Date.parse('2026-10-13T12:00:00Z')) }));
+  assert.match(all, /SCOPE\s+ALL AVAILABLE LOCAL LOGS/);
+  const month = text(buildLines({ ...base, period: parsePeriod('30d', Date.parse('2026-10-13T12:00:00Z')) }));
+  assert.doesNotMatch(month, /ALL AVAILABLE LOCAL LOGS/);
+});

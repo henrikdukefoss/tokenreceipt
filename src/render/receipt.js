@@ -88,6 +88,8 @@ export function buildLines(report) {
   L.push(leader('CASHIER', `TOKENRECEIPT ${report.version || ''}`.trim(), { dots: false }));
   const days = period.since ? Math.round((period.until - period.since) / 86400000) : null;
   L.push(leader('PERIOD', period.since ? `${ymd(period.since)} TO ${ymd(period.until).slice(5)} (${days}D)` : `ALL TIME TO ${ymd(period.until)}`, { dots: false }));
+  // --since all only sees logs still on this machine; say so on the card (suggested in openai/codex discussion #53721)
+  if (!period.since) L.push(leader('SCOPE', 'ALL AVAILABLE LOCAL LOGS', { dots: false }));
   L.push(rule());
   L.push({ segs: [seg('ITEM'.padEnd(WIDTH - TOK_W - AMT_W - 1)), seg('TOKENS'.padStart(TOK_W)), seg(' '), seg('USD'.padStart(AMT_W))] });
 

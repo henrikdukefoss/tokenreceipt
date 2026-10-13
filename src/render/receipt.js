@@ -97,7 +97,9 @@ export function buildLines(report) {
   }
   for (const a of agents) {
     L.push(blank());
-    L.push(item(a.name.toUpperCase(), compact(a.tokens), plain(a.cost), { tone: 'bold' }));
+    // a single-model agent would repeat its numbers on the model row, so its header is the name only
+    if (a.models.length === 1) L.push({ segs: [seg(a.name.toUpperCase().padEnd(WIDTH), 'bold')] });
+    else L.push(item(a.name.toUpperCase(), compact(a.tokens), plain(a.cost), { tone: 'bold' }));
     for (const m of foldModels(a.models, MAX_MODELS_PER_AGENT)) {
       L.push(item(m.model, compact(m.tokens), m.priced ? plain(m.cost) + (m.partial ? '*' : '') : 'unpriced', { indent: true }));
     }

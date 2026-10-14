@@ -27,6 +27,7 @@ npx github:henrikdukefoss/tokenreceipt --svg receipt.svg   # shareable card
 npx github:henrikdukefoss/tokenreceipt --png receipt.png   # same card as PNG, for X and Reddit
 npx github:henrikdukefoss/tokenreceipt --theme dark --png receipt.png
 npx github:henrikdukefoss/tokenreceipt --json              # data only
+npx github:henrikdukefoss/tokenreceipt --badge             # "built with N tokens" README badge
 ```
 
 | Option | Meaning |
@@ -36,6 +37,8 @@ npx github:henrikdukefoss/tokenreceipt --json              # data only
 | `--png <file>` | write the card as a 2x PNG, using `rsvg-convert`, `resvg` or a local Chrome, Chromium or Edge |
 | `--theme <name>` | card theme: `paper` (default) or `dark` |
 | `--json` | print totals per agent and model as JSON |
+| `--badge` | print a "built with N tokens" Markdown badge instead of the receipt |
+| `--badge-cost` | same badge, with the total at API list price added |
 | `--agent <ids>` | only some agents, comma separated, for example `claude-code,codex` |
 | `--offline` | use the bundled price table and make no network request |
 | `--no-color` | plain terminal output |
@@ -50,7 +53,7 @@ installed, open the SVG in a browser and take a screenshot.
    LOCAL AGENT USAGE AT API LIST PRICES
 
 2026-10-01 09:41             RCPT 1B6765FF
-CASHIER                 TOKENRECEIPT 0.1.0
+CASHIER                 TOKENRECEIPT 0.2.0
 PERIOD           2026-09-01 TO 10-01 (30D)
 ------------------------------------------
 ITEM                     TOKENS        USD
@@ -94,6 +97,36 @@ TOKENS ....................... 121,494,391
 
 The list of agents found and not found is printed to stderr, so `--json` output stays clean.
 
+## README badge
+
+Show how many tokens went into a project with a badge in its README:
+
+```sh
+npx github:henrikdukefoss/tokenreceipt --since all --badge
+```
+
+prints one line of Markdown to paste:
+
+```markdown
+[![Built with 121.5M tokens](https://img.shields.io/badge/built%20with-121.5M%20tokens-1d2434 "Counted by tokenreceipt from all available local agent logs")](https://github.com/henrikdukefoss/tokenreceipt)
+```
+
+[![Built with 121.5M tokens](https://img.shields.io/badge/built%20with-121.5M%20tokens-1d2434 "Counted by tokenreceipt from all available local agent logs")](https://github.com/henrikdukefoss/tokenreceipt)
+
+`--badge-cost` adds the total at API list price:
+
+[![Built with 121.5M tokens, $113.16 at API list price](https://img.shields.io/badge/built%20with-121.5M%20tokens%2C%20%24113.16%20at%20API%20list%20price-1d2434 "Counted by tokenreceipt from all available local agent logs")](https://github.com/henrikdukefoss/tokenreceipt)
+
+Both examples are from the synthetic fixtures in `test/fixtures/sample-home`.
+
+- The badge uses the same filters as the receipt: `--since` for the period and `--agent` for the agents.
+- It counts every matching log on your machine, not only the current repo. Pick a period
+  and agents that match the project before you paste it.
+- When some models have no list price, the cost is shown with a `+`, because the real figure is higher.
+- It is a static [shields.io](https://shields.io/badges/static-badge) image: the numbers are part of
+  the URL. tokenreceipt only prints it. Once it is in your README, shields.io serves the image to
+  whoever views it.
+
 ## Supported agents
 
 tokenreceipt detects each agent on its own and skips the ones that are not installed.
@@ -136,6 +169,8 @@ log format is confirmed from source code or documentation. Pull requests with a 
   `--offline` makes no request at all.
 - The receipt shows agent names, model names, token counts and prices. It does not include
   prompts, file paths, project names or your hostname. Check the image before you post it.
+- `--badge` only prints a shields.io URL with the token total (and cost, with `--badge-cost`).
+  Nothing is sent until you publish it.
 
 ## Related guides
 

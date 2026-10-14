@@ -1,5 +1,6 @@
 import { writeFileSync, readFileSync } from 'node:fs';
 import { aggregate, parsePeriod } from './aggregate.js';
+import { buildBadge } from './badge.js';
 import { loadPrices } from './pricing.js';
 import { agentNames, readAll, readers } from './readers/index.js';
 import { THEMES, renderSvg } from './render/svg.js';
@@ -18,6 +19,8 @@ Options:
   --png <file>       also write a PNG (uses rsvg-convert, resvg or Chrome if installed)
   --theme <name>     card theme: paper (default) or dark
   --json             print the data as JSON instead of the receipt
+  --badge            print a "built with N tokens" Markdown badge for a README
+  --badge-cost       same badge, with the cost at API list price added
   --agent <ids>      only these agents, comma separated (${readers.map((r) => r.id).join(', ')})
   --offline          use the bundled price table (no network at all)
   --no-color         plain output
@@ -44,6 +47,8 @@ export function parseArgs(argv) {
       case '--theme': o.theme = value(); break;
       case '--agent': case '--agents': o.agents = value().split(',').map((s) => s.trim()).filter(Boolean); break;
       case '--json': o.json = true; break;
+      case '--badge': o.badge = true; break;
+      case '--badge-cost': o.badge = true; o.badgeCost = true; break;
       case '--offline': o.offline = true; break;
       case '--no-color': o.color = false; break;
       case '-h': case '--help': o.help = true; break;
@@ -64,6 +69,10 @@ export async function main(argv = process.argv.slice(2)) {
   }
   if (o.help) return console.log(HELP), 0;
   if (o.version) return console.log(VERSION), 0;
+  if (o.json && o.badge) {
+    console.error('tokenreceipt: use --json or --badge, not both');
+    return 2;
+  }
 
   let period;
   try {
@@ -97,6 +106,15 @@ export async function main(argv = process.argv.slice(2)) {
 
   if (o.json) {
     console.log(JSON.stringify(toJson(report, scan), null, 2));
+  } else if (o.badge) {
+    const badge = buildBadge(report, { cost: o.badgeCost });
+    if (badge) {
+      for (const n of badge.notes) log(`note: ${n}`);
+      log('note: the badge counts every matching agent log on this machine for the period, not only this repo. Narrow it with --since and --agent.');
+      console.log(badge.markdown);
+    } else {
+      log('no token usage in this period, so there is no badge to print');
+    }
   } else {
     const color = o.color && process.stdout.isTTY && !process.env.NO_COLOR;
     process.stdout.write('\n' + renderTerminal(report, { color }) + '\n');

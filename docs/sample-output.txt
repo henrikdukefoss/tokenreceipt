@@ -2,7 +2,7 @@
    LOCAL AGENT USAGE AT API LIST PRICES
 
 2026-10-01 09:41             RCPT 1B6765FF
-CASHIER                 TOKENRECEIPT 0.1.0
+CASHIER                 TOKENRECEIPT 0.2.0
 PERIOD           2026-09-01 TO 10-01 (30D)
 ------------------------------------------
 ITEM                     TOKENS        USD

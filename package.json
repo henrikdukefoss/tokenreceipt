@@ -1,6 +1,6 @@
 {
   "name": "tokenreceipt",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A till receipt for your AI coding agents: totals local token usage from Claude Code, Codex, OpenCode and more, priced at public API list prices.",
   "type": "module",
   "bin": {

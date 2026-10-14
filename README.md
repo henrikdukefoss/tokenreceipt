@@ -137,6 +137,16 @@ log format is confirmed from source code or documentation. Pull requests with a 
 - The receipt shows agent names, model names, token counts and prices. It does not include
   prompts, file paths, project names or your hostname. Check the image before you post it.
 
+## Related guides
+
+Written by Standard Compute, which makes tokenreceipt:
+
+- [The Agent Burn Index](https://standardcompute.com/agent-burn-index): how many tokens AI coding agents use, measured.
+- [AI coding agent monthly costs](https://standardcompute.com/ai-coding-agent-monthly-cost): real monthly spend per agent, not pricing pages. Also in: [Español](https://standardcompute.com/costo-agente-de-codificacion-ia) · [Português](https://standardcompute.com/custo-agente-de-codificacao-ia) · [Français](https://standardcompute.com/cout-agent-de-codage-ia) · [日本語](https://standardcompute.com/ai-coding-agent-hiyou) · [한국어](https://standardcompute.com/ai-coding-agent-biyong) · [简体中文](https://standardcompute.com/ai-coding-agent-feiyong) · [Norsk](https://standardcompute.com/kostnad-ai-kodeagent)
+- [How to cut your AI agent's API bill](https://standardcompute.com/cut-ai-agent-api-costs): seven tactics, with per-agent pages.
+- [Reduce Claude Code token usage](https://standardcompute.com/reduce-claude-code-token-usage): ten levers ranked with real data.
+- [tokenreceipt on the web](https://standardcompute.com/tools/token-receipt): what the receipt shows and how to read it.
+
 ## Who makes this
 
 tokenreceipt is open source and made by [Standard Compute](https://standardcompute.com), which

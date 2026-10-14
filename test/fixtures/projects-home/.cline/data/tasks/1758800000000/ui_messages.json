@@ -1,0 +1,12 @@
+[
+ {
+  "ts": 1758800001000,
+  "type": "say",
+  "say": "api_req_started",
+  "text": "{\"tokensIn\":700,\"tokensOut\":70,\"cacheWrites\":0,\"cacheReads\":0,\"cost\":0}",
+  "modelInfo": {
+   "modelId": "claude-sonnet-4-5",
+   "providerId": "anthropic"
+  }
+ }
+]

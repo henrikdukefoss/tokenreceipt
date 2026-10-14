@@ -8,11 +8,44 @@
 // calls were still made. `input` includes `cached`; `thoughts` are billed as output and
 // `tool` (tool-use prompt) as input. The model can be missing; the previous one is reused.
 import { readFileSync } from 'node:fs';
-import { join, sep } from 'node:path';
+import { dirname, join, relative, sep } from 'node:path';
 import { home, isDir, num, readJsonl, toMs, walk } from '../lib/fs.js';
 
 export const id = 'gemini-cli';
 export const name = 'Gemini CLI';
+// --project: newer versions write the project path to tmp/<id>/.project_root (and map
+// path -> id in ~/.gemini/projects.json); older versions name the folder sha256(project root).
+export const projectAware = true;
+
+const readText = (p) => {
+  try {
+    return readFileSync(p, 'utf8');
+  } catch {
+    return null;
+  }
+};
+
+/** id -> project path from projects.json ({ projects: { path: id } } or a flat { path: id }). */
+function projectIds(tmpDir) {
+  const out = new Map();
+  try {
+    const doc = JSON.parse(readText(join(dirname(tmpDir), 'projects.json')));
+    const map = doc?.projects && typeof doc.projects === 'object' ? doc.projects : doc;
+    for (const [path, pid] of Object.entries(map || {})) if (typeof pid === 'string') out.set(pid, path);
+  } catch {
+    // no registry
+  }
+  return out;
+}
+
+/** Where the sessions in tmp/<id> ran: { cwd } or { geminiHash }, or {} when unknown. */
+export function locationOf(tmpDir, pid, ids = projectIds(tmpDir)) {
+  const marker = readText(join(tmpDir, pid, '.project_root'))?.trim();
+  if (marker) return { cwd: marker };
+  if (ids.has(pid)) return { cwd: ids.get(pid) };
+  if (/^[0-9a-f]{64}$/.test(pid)) return { geminiHash: pid };
+  return {};
+}
 
 export function roots(env = process.env) {
   if (env.GEMINI_DATA_DIR) return [env.GEMINI_DATA_DIR];
@@ -67,11 +100,20 @@ export async function load({ sinceMs = 0, untilMs = Infinity, env } = {}) {
   const dirs = [...new Set(roots(env))].filter(isDir);
   if (!dirs.length) return { found: false };
   const files = dirs.flatMap((d) =>
-    walk(d, (n) => n.endsWith('.json') || n.endsWith('.jsonl'), sinceMs).filter((f) => f.includes(`${sep}chats${sep}`)),
+    walk(d, (n) => n.endsWith('.json') || n.endsWith('.jsonl'), sinceMs)
+      .filter((f) => f.includes(`${sep}chats${sep}`))
+      .map((f) => [d, f]),
   );
   const seen = new Set();
   const events = [];
-  for (const f of files) {
+  const ids = new Map();
+  const where = new Map();
+  for (const [dir, f] of files) {
+    const pid = relative(dir, f).split(sep)[0];
+    const wkey = `${dir}${sep}${pid}`;
+    if (!ids.has(dir)) ids.set(dir, projectIds(dir));
+    if (!where.has(wkey)) where.set(wkey, locationOf(dir, pid, ids.get(dir)));
+    const loc = where.get(wkey);
     let model;
     for (const m of await messagesOf(f)) {
       if (m?.type !== 'gemini') continue;
@@ -81,7 +123,7 @@ export async function load({ sinceMs = 0, untilMs = Infinity, env } = {}) {
       const key = m.id;
       if (seen.has(key)) continue;
       seen.add(key);
-      events.push(ev);
+      events.push(Object.assign(ev, loc));
     }
   }
   return { found: true, detail: `${files.length} chat file${files.length === 1 ? '' : 's'}`, events };

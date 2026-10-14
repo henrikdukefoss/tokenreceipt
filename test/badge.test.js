@@ -45,6 +45,11 @@ test('badge cost is opt-in, list price, and a lower bound when some tokens are u
   assert.equal(unpriced.notes.length, 1);
 });
 
+test('badge hover title says "this project" with --project', () => {
+  const b = buildBadge({ ...report({ tokens: 11_220 }), project: '/work/alpha' });
+  assert.match(b.markdown, /"Counted by tokenreceipt for this project from local agent logs, last 30 days"/);
+});
+
 test('no usage, no badge', () => {
   assert.equal(buildBadge(report({ tokens: 0 })), null);
 });
@@ -56,7 +61,7 @@ test('parseArgs: --badge and --badge-cost', () => {
 });
 
 const bin = fileURLToPath(new URL('../bin/tokenreceipt.js', import.meta.url));
-const run = (args, home = fixture('sample-home')) =>
+const runIn = (args, home = fixture('sample-home')) =>
   execFileSync(process.execPath, [bin, ...args], {
     env: { PATH: process.env.PATH, TOKENRECEIPT_HOME: home, XDG_CACHE_HOME: join(tmpdir(), 'tokenreceipt-test-cache'), NO_COLOR: '1' },
     encoding: 'utf8',
@@ -64,6 +69,8 @@ const run = (args, home = fixture('sample-home')) =>
   });
 
 test('cli: --badge prints one Markdown line for the sample fixtures and respects --agent', () => {
+  // --all-projects: the tests run inside this git repo, where --badge would default to --project .
+  const run = (args, home) => runIn([...args, '--all-projects'], home);
   const out = run(['--since', 'all', '--offline', '--badge']);
   assert.equal(out, `[![Built with 121.5M tokens](https://img.shields.io/badge/built%20with-121.5M%20tokens-1d2434 "Counted by tokenreceipt from all available local agent logs")](${BADGE_LINK})\n`);
   const cost = run(['--since', 'all', '--offline', '--badge-cost']);

@@ -90,6 +90,10 @@ export function buildLines(report) {
   L.push(leader('PERIOD', period.since ? `${ymd(period.since)} TO ${ymd(period.until).slice(5)} (${days}D)` : `ALL TIME TO ${ymd(period.until)}`, { dots: false }));
   // --since all only sees logs still on this machine; say so on the card (suggested in openai/codex discussion #53721)
   if (!period.since) L.push(leader('SCOPE', 'ALL AVAILABLE LOCAL LOGS', { dots: false }));
+  if (report.project) {
+    const name = report.project.split(/[\\/]/).filter(Boolean).pop() || report.project;
+    L.push(leader('PROJECT', name.length > 30 ? `${name.slice(0, 29)}.` : name, { dots: false }));
+  }
   L.push(rule());
   L.push({ segs: [seg('ITEM'.padEnd(WIDTH - TOK_W - AMT_W - 1)), seg('TOKENS'.padStart(TOK_W)), seg(' '), seg('USD'.padStart(AMT_W))] });
 

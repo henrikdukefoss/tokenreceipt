@@ -8,12 +8,15 @@
 //     A legacy task resumed in the SDK gets one converted message with the whole legacy total
 //     (provider "unknown", no ts); it is skipped because the legacy files are counted above.
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { home, isDir, num, walk } from '../lib/fs.js';
 import { globalStorageTasks, loadTaskDirs } from './vscode-tasks.js';
 
 export const id = 'cline';
 export const name = 'Cline';
+// --project: classic tasks via taskHistory.json / environment details; SDK sessions via the
+// session manifest's cwd (or the environment details in its messages).
+export const projectAware = true;
 
 const clineDir = (env) => env.CLINE_DIR || join(home(env), '.cline');
 
@@ -23,7 +26,27 @@ export function sessionRoots(env = process.env) {
   return [join(clineDir(env), 'data', 'sessions')];
 }
 
-export function sdkEvents(file, { sinceMs = 0, untilMs = Infinity } = {}) {
+const CWD_RE = /# Current Working Directory \((.+?)\) Files/;
+
+/** Folder an SDK session ran in: the manifest <id>.json next to the messages file, else its environment details. */
+export function sdkCwd(file, doc) {
+  try {
+    const id = basename(file).replace(/\.messages\.json$/, '');
+    const meta = JSON.parse(readFileSync(join(dirname(file), `${id}.json`), 'utf8'));
+    const cwd = meta?.cwd || meta?.workspaceRoot || meta?.workspace_root;
+    if (typeof cwd === 'string' && cwd) return cwd;
+  } catch {
+    // no manifest
+  }
+  for (const m of Array.isArray(doc?.messages) ? doc.messages : []) {
+    const text = typeof m?.content === 'string' ? m.content : Array.isArray(m?.content) ? m.content.map((b) => b?.text || '').join('\n') : '';
+    const match = CWD_RE.exec(text);
+    if (match) return match[1].trim();
+  }
+  return undefined;
+}
+
+export function sdkEvents(file, { sinceMs = 0, untilMs = Infinity, project } = {}) {
   let doc;
   try {
     doc = JSON.parse(readFileSync(file, 'utf8'));
@@ -31,6 +54,7 @@ export function sdkEvents(file, { sinceMs = 0, untilMs = Infinity } = {}) {
     return [];
   }
   const out = [];
+  const cwd = project ? sdkCwd(file, doc) : undefined;
   for (const m of Array.isArray(doc?.messages) ? doc.messages : []) {
     const x = m?.metrics;
     if (!x || m.role !== 'assistant') continue;
@@ -50,18 +74,20 @@ export function sdkEvents(file, { sinceMs = 0, untilMs = Infinity } = {}) {
       cacheRead,
       cacheWrite,
       cacheWrite1h: 0,
+      cwd,
     };
     if (ev.input + ev.output + ev.cacheRead + ev.cacheWrite > 0) out.push(ev);
   }
   return out;
 }
 
-export async function load({ sinceMs = 0, untilMs = Infinity, env = process.env, platform } = {}) {
+export async function load({ sinceMs = 0, untilMs = Infinity, env = process.env, platform, project } = {}) {
   const legacy = loadTaskDirs([...globalStorageTasks(env, platform, 'saoudrizwan.claude-dev'), join(clineDir(env), 'data', 'tasks')], {
     agent: id,
     flavor: 'cline',
     sinceMs,
     untilMs,
+    project,
   });
   const sdkDirs = sessionRoots(env).filter(isDir);
   if (!legacy.found && !sdkDirs.length) return { found: false };
@@ -69,7 +95,7 @@ export async function load({ sinceMs = 0, untilMs = Infinity, env = process.env,
   const files = sdkDirs.flatMap((d) => walk(d, (n) => n.endsWith('.messages.json'), sinceMs));
   const seen = new Set();
   for (const f of files) {
-    for (const ev of sdkEvents(f, { sinceMs, untilMs })) {
+    for (const ev of sdkEvents(f, { sinceMs, untilMs, project })) {
       if (seen.has(ev.key)) continue;
       seen.add(ev.key);
       delete ev.key;

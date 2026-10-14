@@ -17,6 +17,7 @@ export function shieldsUrl(label, message, color = BADGE_COLOR) {
 /**
  * Returns { markdown, url, label, message, notes } for the report totals, or null when there is no usage.
  * The token count is always shown; the list-price cost only with { cost: true }.
+ * When report.project is set (--project), the hover title says the count is for this project.
  */
 export function buildBadge(report, { cost = false } = {}) {
   const { totals, period } = report;
@@ -37,6 +38,6 @@ export function buildBadge(report, { cost = false } = {}) {
   const url = shieldsUrl(label, message);
   const scope = period.sinceMs === 0 ? 'from all available local agent logs' : `from local agent logs, ${period.label.toLowerCase()}`;
   const alt = `Built with ${message}`.replace(/[[\]]/g, '');
-  const title = `Counted by tokenreceipt ${scope}`.replace(/"/g, "'");
+  const title = `Counted by tokenreceipt ${report.project ? 'for this project ' : ''}${scope}`.replace(/"/g, "'");
   return { markdown: `[![${alt}](${url} "${title}")](${BADGE_LINK})`, url, label, message, notes };
 }

@@ -1,0 +1,12 @@
+[
+ {
+  "role": "user",
+  "ts": 1758800000000,
+  "content": [
+   {
+    "type": "text",
+    "text": "task\n<environment_details>\n# Current Working Directory (/work/beta) Files\nsrc/\n\n<model>claude-sonnet-4-5</model>\n</environment_details>"
+   }
+  ]
+ }
+]

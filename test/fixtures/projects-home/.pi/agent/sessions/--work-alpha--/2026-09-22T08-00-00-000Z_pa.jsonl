@@ -1,0 +1,2 @@
+{"type":"session","version":3,"id":"pa","timestamp":"2026-09-22T08:00:00.000Z","cwd":"/work/alpha"}
+{"type":"message","id":"pa-e1","parentId":null,"timestamp":"2026-09-22T08:00:00.000Z","message":{"role":"assistant","provider":"openai","model":"gpt-5","usage":{"input":1500,"output":150,"cacheRead":0,"cacheWrite":0}}}

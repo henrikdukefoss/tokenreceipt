@@ -11,6 +11,9 @@ import { querySqlite } from '../lib/sqlite.js';
 
 export const id = 'hermes';
 export const name = 'Hermes';
+// --project: not supported. state.db keeps per-session totals with no working directory.
+export const projectAware = false;
+export const projectNote = 'state.db records no working directory per session';
 
 export function databases(env = process.env) {
   const base = env.HERMES_HOME || join(home(env), '.hermes');

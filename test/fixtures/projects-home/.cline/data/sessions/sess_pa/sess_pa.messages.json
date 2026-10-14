@@ -1,0 +1,20 @@
+{
+ "sessionId": "sess_pa",
+ "messages": [
+  {
+   "id": "m1",
+   "role": "assistant",
+   "ts": 1758794400000,
+   "modelInfo": {
+    "id": "gpt-5",
+    "provider": "openai"
+   },
+   "metrics": {
+    "inputTokens": 500,
+    "outputTokens": 50,
+    "cacheReadTokens": 0,
+    "cacheWriteTokens": 0
+   }
+  }
+ ]
+}

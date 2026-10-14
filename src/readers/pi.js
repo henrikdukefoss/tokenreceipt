@@ -12,6 +12,8 @@ import { home, isDir, num, readJsonl, toMs, walk } from '../lib/fs.js';
 
 export const id = 'pi';
 export const name = 'Pi';
+// --project: the session header line records `cwd`.
+export const projectAware = true;
 
 export function roots(env = process.env) {
   if (env.PI_CODING_AGENT_SESSION_DIR) return [env.PI_CODING_AGENT_SESSION_DIR];
@@ -27,7 +29,12 @@ export async function load({ sinceMs = 0, untilMs = Infinity, env } = {}) {
   for (const f of files) {
     let model;
     let provider;
-    for await (const e of readJsonl(f, (l) => l.includes('"usage"') || l.includes('"model_change"'))) {
+    let cwd;
+    for await (const e of readJsonl(f, (l) => l.includes('"usage"') || l.includes('"model_change"') || l.includes('"cwd"'))) {
+      if (e?.type === 'session') {
+        if (typeof e.cwd === 'string' && e.cwd) cwd = e.cwd;
+        continue;
+      }
       if (e?.type === 'model_change') {
         model = e.modelId || model;
         provider = e.provider || provider;
@@ -56,6 +63,7 @@ export async function load({ sinceMs = 0, untilMs = Infinity, env } = {}) {
         cacheRead: num(u.cacheRead),
         cacheWrite,
         cacheWrite1h: Math.min(cacheWrite, num(u.cacheWrite1h)),
+        cwd,
       };
       if (ev.input + ev.output + ev.cacheRead + ev.cacheWrite > 0) events.push(ev);
     }

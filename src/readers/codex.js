@@ -15,13 +15,15 @@ import { home, isDir, num, readJsonl, toMs, walk } from '../lib/fs.js';
 
 export const id = 'codex';
 export const name = 'Codex CLI';
+// --project: session_meta and turn_context lines record `cwd`.
+export const projectAware = true;
 
 export function roots(env = process.env) {
   const base = env.CODEX_HOME || join(home(env), '.codex');
   return [join(base, 'sessions'), join(base, 'archived_sessions')];
 }
 
-function toEvent(u, model, ts) {
+function toEvent(u, model, ts, cwd) {
   const cacheRead = num(u.cached_input_tokens);
   const cacheWrite = num(u.cache_write_input_tokens);
   return {
@@ -33,6 +35,7 @@ function toEvent(u, model, ts) {
     cacheRead,
     cacheWrite,
     cacheWrite1h: 0,
+    cwd,
   };
 }
 
@@ -52,6 +55,8 @@ export async function parseFile(file, { sinceMs = 0, untilMs = Infinity, seen = 
   const counts = [];
   const turnModel = new Map();
   let model = 'unknown';
+  let cwd;
+  const turnCwd = new Map();
   let prevTotal = null;
   let prevTotalObj = null;
   for await (const line of readJsonl(file, relevant)) {
@@ -59,6 +64,10 @@ export async function parseFile(file, { sinceMs = 0, untilMs = Infinity, seen = 
     if (!p || typeof p !== 'object') continue;
     const ts = toMs(line.timestamp);
     if (line.type === 'session_meta' || line.type === 'turn_context') {
+      if (typeof p.cwd === 'string' && p.cwd) {
+        cwd = p.cwd;
+        if (p.turn_id) turnCwd.set(p.turn_id, p.cwd);
+      }
       if (typeof p.model === 'string' && p.model) {
         model = p.model;
         if (p.turn_id) turnModel.set(p.turn_id, p.model);
@@ -70,7 +79,7 @@ export async function parseFile(file, { sinceMs = 0, untilMs = Infinity, seen = 
         if (seen.has(p.response_id)) continue;
         seen.add(p.response_id);
       }
-      records.push(toEvent(p.usage, turnModel.get(p.turn_id) || model, ts));
+      records.push(toEvent(p.usage, turnModel.get(p.turn_id) || model, ts, turnCwd.get(p.turn_id) || cwd));
       continue;
     }
     if (line.type === 'event_msg' && p.type === 'token_count' && p.info) {
@@ -83,7 +92,7 @@ export async function parseFile(file, { sinceMs = 0, untilMs = Infinity, seen = 
         prevTotal = totalN;
         prevTotalObj = total;
       }
-      if (last) counts.push(toEvent(last, model, ts));
+      if (last) counts.push(toEvent(last, model, ts, cwd));
     }
   }
   const events = (records.length ? records : counts).filter((e) => e.ts >= sinceMs && e.ts < untilMs);

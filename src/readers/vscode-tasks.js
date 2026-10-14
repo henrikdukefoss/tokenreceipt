@@ -3,8 +3,11 @@
 // ui_messages.json is an array of { ts (ms), type, say, text, modelInfo? }. Usage is on
 // say:"api_req_started" (plus Cline's "deleted_api_reqs" and "subagent_usage"), whose
 // `text` is a JSON string { tokensIn, tokensOut, cacheWrites, cacheReads, cost, apiProtocol? }.
+// The task's folder is recorded in <globalStorage>/state/taskHistory.json (Cline: cwdOnTaskInitialization)
+// and in the environment details of api_conversation_history.json
+// ("# Current Working Directory (<path>) Files" in Cline, "# Current Workspace Directory (<path>) Files" in Roo/Kilo).
 import { readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { home, isDir, num } from '../lib/fs.js';
 
 const PRODUCTS = ['Code', 'Code - Insiders', 'VSCodium', 'Cursor', 'Windsurf'];
@@ -42,13 +45,38 @@ function at(list, ts) {
   return v ?? list[0]?.[1] ?? null;
 }
 
+const historyText = (m) => (typeof m?.content === 'string' ? m.content : Array.isArray(m?.content) ? m.content.map((b) => b?.text || '').join('\n') : '');
+const CWD_RE = /# Current (?:Working|Workspace) Directory \((.+?)\) Files/;
+
+/** The folder a task ran in, from its first environment details block. */
+export function cwdFromHistory(taskDir) {
+  const hist = readJson(join(taskDir, 'api_conversation_history.json'));
+  if (!Array.isArray(hist)) return undefined;
+  for (const m of hist) {
+    const match = CWD_RE.exec(historyText(m));
+    if (match) return match[1].trim();
+  }
+  return undefined;
+}
+
+/** task id -> folder from <tasks>/../state/taskHistory.json, when the extension keeps one. */
+function taskHistoryCwds(tasksRoot) {
+  const out = new Map();
+  const list = readJson(join(dirname(tasksRoot), 'state', 'taskHistory.json'));
+  for (const h of Array.isArray(list) ? list : []) {
+    const cwd = h?.cwdOnTaskInitialization || h?.workspace;
+    if (h?.id && typeof cwd === 'string' && cwd) out.set(String(h.id), cwd);
+  }
+  return out;
+}
+
 /** Roo/Kilo: the model is only recorded as <model>id</model> in each turn's environment details. */
 function modelsFromHistory(taskDir) {
   const hist = readJson(join(taskDir, 'api_conversation_history.json'));
   const out = [];
   if (!Array.isArray(hist)) return out;
   for (const m of hist) {
-    const text = typeof m?.content === 'string' ? m.content : Array.isArray(m?.content) ? m.content.map((b) => b?.text || '').join('\n') : '';
+    const text = historyText(m);
     const match = /<model>([^<]+)<\/model>/.exec(text);
     if (match && m.ts) out.push([m.ts, match[1].trim()]);
   }
@@ -114,7 +142,7 @@ export function parseTask(taskDir, { agent, flavor, sinceMs = 0, untilMs = Infin
 }
 
 /** Load every task folder under the given `<...>/tasks` directories. */
-export function loadTaskDirs(taskRoots, { agent, flavor, sinceMs = 0, untilMs = Infinity }) {
+export function loadTaskDirs(taskRoots, { agent, flavor, sinceMs = 0, untilMs = Infinity, project }) {
   const roots = [...new Set(taskRoots)].filter(isDir);
   if (!roots.length) return { found: false };
   const events = [];
@@ -126,9 +154,14 @@ export function loadTaskDirs(taskRoots, { agent, flavor, sinceMs = 0, untilMs = 
     } catch {
       continue;
     }
+    const known = project ? taskHistoryCwds(root) : null;
     for (const taskId of ids) {
       const evs = parseTask(join(root, taskId), { agent, flavor, sinceMs, untilMs });
       if (evs.length) tasks++;
+      if (project && evs.length) {
+        const cwd = known.get(taskId) || cwdFromHistory(join(root, taskId));
+        if (cwd) for (const ev of evs) ev.cwd = cwd;
+      }
       events.push(...evs);
     }
   }

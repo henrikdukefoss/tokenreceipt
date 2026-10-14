@@ -2,11 +2,13 @@
 // Assistant lines carry message.usage, message.model, message.id, requestId, timestamp.
 // Streaming writes the same message several times; we keep one entry per
 // message.id + requestId (the one with the most output tokens, i.e. the final count).
-import { join } from 'node:path';
+import { join, relative, sep } from 'node:path';
 import { home, isDir, num, readJsonl, toMs, walk } from '../lib/fs.js';
 
 export const id = 'claude-code';
 export const name = 'Claude Code';
+// --project: each log line records `cwd`; the project folder name is the fallback.
+export const projectAware = true;
 
 export function roots(env = process.env) {
   if (env.CLAUDE_CONFIG_DIR) {
@@ -18,11 +20,14 @@ export function roots(env = process.env) {
 export async function load({ sinceMs = 0, untilMs = Infinity, env } = {}) {
   const dirs = [...new Set(roots(env))].filter(isDir);
   if (!dirs.length) return { found: false };
-  const files = dirs.flatMap((d) => walk(d, (n) => n.endsWith('.jsonl'), sinceMs));
+  const files = dirs.flatMap((d) => walk(d, (n) => n.endsWith('.jsonl'), sinceMs).map((f) => [d, f]));
   const byKey = new Map();
   const loose = [];
-  for (const file of files) {
+  for (const [dir, file] of files) {
+    let cwd;
+    const slug = relative(dir, file).split(sep)[0];
     for await (const line of readJsonl(file, (l) => l.includes('"usage"'))) {
+      if (typeof line?.cwd === 'string' && line.cwd) cwd = line.cwd;
       const msg = line?.message;
       const u = msg?.usage;
       if (!u || typeof u !== 'object') continue;
@@ -40,6 +45,8 @@ export async function load({ sinceMs = 0, untilMs = Infinity, env } = {}) {
         cacheRead: num(u.cache_read_input_tokens),
         cacheWrite,
         cacheWrite1h: Math.min(cacheWrite, num(u.cache_creation?.ephemeral_1h_input_tokens)),
+        cwd,
+        claudeSlug: slug,
       };
       if (msg.id) {
         // requestId is missing when Claude Code talks to a custom base URL; message.id still identifies the response

@@ -27,7 +27,8 @@ npx github:henrikdukefoss/tokenreceipt --svg receipt.svg   # shareable card
 npx github:henrikdukefoss/tokenreceipt --png receipt.png   # same card as PNG, for X and Reddit
 npx github:henrikdukefoss/tokenreceipt --theme dark --png receipt.png
 npx github:henrikdukefoss/tokenreceipt --json              # data only
-npx github:henrikdukefoss/tokenreceipt --badge             # "built with N tokens" README badge
+npx github:henrikdukefoss/tokenreceipt --project           # only this repo (or --project <path>)
+npx github:henrikdukefoss/tokenreceipt --badge             # "built with N tokens" README badge for this repo
 ```
 
 | Option | Meaning |
@@ -37,8 +38,10 @@ npx github:henrikdukefoss/tokenreceipt --badge             # "built with N token
 | `--png <file>` | write the card as a 2x PNG, using `rsvg-convert`, `resvg` or a local Chrome, Chromium or Edge |
 | `--theme <name>` | card theme: `paper` (default) or `dark` |
 | `--json` | print totals per agent and model as JSON |
-| `--badge` | print a "built with N tokens" Markdown badge instead of the receipt |
+| `--badge` | print a "built with N tokens" Markdown badge instead of the receipt. Inside a git repo it counts only that repo (`--project .`) |
 | `--badge-cost` | same badge, with the total at API list price added |
+| `--project [path]` | only sessions that ran inside this folder. Without a path: the current folder. Inside a git repo the folder is widened to the repo root |
+| `--all-projects` | count every project, also for `--badge` inside a git repo |
 | `--agent <ids>` | only some agents, comma separated, for example `claude-code,codex` |
 | `--offline` | use the bundled price table and make no network request |
 | `--no-color` | plain terminal output |
@@ -53,7 +56,7 @@ installed, open the SVG in a browser and take a screenshot.
    LOCAL AGENT USAGE AT API LIST PRICES
 
 2026-10-01 09:41             RCPT 1B6765FF
-CASHIER                 TOKENRECEIPT 0.2.0
+CASHIER                 TOKENRECEIPT 0.3.0
 PERIOD           2026-09-01 TO 10-01 (30D)
 ------------------------------------------
 ITEM                     TOKENS        USD
@@ -99,29 +102,33 @@ The list of agents found and not found is printed to stderr, so `--json` output 
 
 ## README badge
 
-Show how many tokens went into a project with a badge in its README:
+Show how many tokens went into a project with a badge in its README. Run this inside the repo:
 
 ```sh
 npx github:henrikdukefoss/tokenreceipt --since all --badge
 ```
 
-prints one line of Markdown to paste:
+It prints one line of Markdown to paste:
 
 ```markdown
-[![Built with 121.5M tokens](https://img.shields.io/badge/built%20with-121.5M%20tokens-1d2434 "Counted by tokenreceipt from all available local agent logs")](https://github.com/henrikdukefoss/tokenreceipt)
+[![Built with 11.2K tokens](https://img.shields.io/badge/built%20with-11.2K%20tokens-1d2434 "Counted by tokenreceipt for this project from all available local agent logs")](https://github.com/henrikdukefoss/tokenreceipt)
 ```
 
-[![Built with 121.5M tokens](https://img.shields.io/badge/built%20with-121.5M%20tokens-1d2434 "Counted by tokenreceipt from all available local agent logs")](https://github.com/henrikdukefoss/tokenreceipt)
+[![Built with 11.2K tokens](https://img.shields.io/badge/built%20with-11.2K%20tokens-1d2434 "Counted by tokenreceipt for this project from all available local agent logs")](https://github.com/henrikdukefoss/tokenreceipt)
 
 `--badge-cost` adds the total at API list price:
 
 [![Built with 121.5M tokens, $113.16 at API list price](https://img.shields.io/badge/built%20with-121.5M%20tokens%2C%20%24113.16%20at%20API%20list%20price-1d2434 "Counted by tokenreceipt from all available local agent logs")](https://github.com/henrikdukefoss/tokenreceipt)
 
-Both examples are from the synthetic fixtures in `test/fixtures/sample-home`.
+The examples are from the synthetic fixtures in `test/fixtures/projects-home` (`--project /work/alpha`)
+and `test/fixtures/sample-home` (`--all-projects`).
 
+- Inside a git repo, `--badge` counts only sessions that ran in that repo or a folder below it,
+  as if you had passed `--project .`. Outside a repo, or with `--all-projects`, it counts every
+  matching log on your machine. The project in use is printed to stderr.
+- Agents whose logs do not record a folder (Hermes) are left out of a per-project count, with
+  a note on stderr. See [Per-project totals](#per-project-totals).
 - The badge uses the same filters as the receipt: `--since` for the period and `--agent` for the agents.
-- It counts every matching log on your machine, not only the current repo. Pick a period
-  and agents that match the project before you paste it.
 - When some models have no list price, the cost is shown with a `+`, because the real figure is higher.
 - It is a static [shields.io](https://shields.io/badges/static-badge) image: the numbers are part of
   the URL. tokenreceipt only prints it. Once it is in your README, shields.io serves the image to
@@ -144,6 +151,26 @@ tokenreceipt detects each agent on its own and skips the ones that are not insta
 | Hermes | `~/.hermes/state.db` and profiles | Respects `HERMES_HOME`. Hermes stores per-session totals, so a period boundary splits usage by session, not by request. |
 
 VS Code-family folders are looked up for Code, Code - Insiders, VSCodium, Cursor and Windsurf.
+
+### Per-project totals
+
+`--project [path]` keeps only sessions whose recorded working folder is the project folder or
+a folder below it. A path inside a git repo is widened to the repo root. Where each agent
+records the folder:
+
+| Agent | Per project | Recorded as |
+| --- | --- | --- |
+| Claude Code | yes | `cwd` on every log line. Lines without it fall back to the `~/.claude/projects/<folder>` name, which only matches the project root itself |
+| Codex CLI | yes | `cwd` in `session_meta` and per turn in `turn_context` |
+| OpenCode | yes | `path.cwd` on each assistant message, else the session's `directory` |
+| Gemini CLI | yes | `tmp/<id>/.project_root` or `~/.gemini/projects.json`. Older sha256-named folders only match the project root itself |
+| Cline | yes | `cwdOnTaskInitialization` in `state/taskHistory.json` or the "Current Working Directory" in the task's environment details; SDK sessions: `cwd` in the session manifest |
+| Roo Code | yes | "Current Workspace Directory" in the task's environment details |
+| Kilo Code | yes | `kilo.db` like OpenCode; legacy tasks like Roo Code |
+| Pi | yes | `cwd` in the session header |
+| Hermes | no | `state.db` keeps per-session totals with no working folder, so Hermes is skipped and named on stderr |
+
+Requests with no recorded folder are left out, and their count is printed as a note.
 
 Planned: Amp, Goose, Aider, Continue, Zed, Copilot CLI and OpenClaw. A reader is added once its
 log format is confirmed from source code or documentation. Pull requests with a fixture are welcome.
@@ -168,7 +195,8 @@ log format is confirmed from source code or documentation. Pull requests with a 
 - The only network request fetches the public price list from raw.githubusercontent.com.
   `--offline` makes no request at all.
 - The receipt shows agent names, model names, token counts and prices. It does not include
-  prompts, file paths, project names or your hostname. Check the image before you post it.
+  prompts, file paths, project names or your hostname, except the project folder's name when
+  you pass `--project`. Check the image before you post it.
 - `--badge` only prints a shields.io URL with the token total (and cost, with `--badge-cost`).
   Nothing is sent until you publish it.
 

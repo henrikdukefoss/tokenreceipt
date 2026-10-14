@@ -2,6 +2,7 @@ import { writeFileSync, readFileSync } from 'node:fs';
 import { aggregate, parsePeriod } from './aggregate.js';
 import { buildBadge } from './badge.js';
 import { loadPrices } from './pricing.js';
+import { gitRoot, projectMatcher, resolveProject } from './project.js';
 import { agentNames, readAll, readers } from './readers/index.js';
 import { THEMES, renderSvg } from './render/svg.js';
 import { renderTerminal } from './render/terminal.js';
@@ -20,7 +21,11 @@ Options:
   --theme <name>     card theme: paper (default) or dark
   --json             print the data as JSON instead of the receipt
   --badge            print a "built with N tokens" Markdown badge for a README
+                     (inside a git repo it counts only that repo, as --project .)
   --badge-cost       same badge, with the cost at API list price added
+  --project [path]   only sessions that ran inside this folder (default: current
+                     folder, widened to its git repo root)
+  --all-projects     count every project, also for --badge inside a repo
   --agent <ids>      only these agents, comma separated (${readers.map((r) => r.id).join(', ')})
   --offline          use the bundled price table (no network at all)
   --no-color         plain output
@@ -49,6 +54,14 @@ export function parseArgs(argv) {
       case '--json': o.json = true; break;
       case '--badge': o.badge = true; break;
       case '--badge-cost': o.badge = true; o.badgeCost = true; break;
+      case '--project': {
+        // optional value: --project, --project <path>, --project=<path>
+        if (inline !== undefined) o.project = inline || '.';
+        else if (argv[i + 1] != null && !argv[i + 1].startsWith('-')) o.project = argv[++i];
+        else o.project = '.';
+        break;
+      }
+      case '--all-projects': o.allProjects = true; break;
       case '--offline': o.offline = true; break;
       case '--no-color': o.color = false; break;
       case '-h': case '--help': o.help = true; break;
@@ -85,6 +98,15 @@ export async function main(argv = process.argv.slice(2)) {
     console.error(`tokenreceipt: unknown theme "${o.theme}" (use ${Object.keys(THEMES).join(' or ')})`);
     return 2;
   }
+  if (o.project && o.allProjects) {
+    console.error('tokenreceipt: use --project or --all-projects, not both');
+    return 2;
+  }
+  // --badge goes in one repo's README, so inside a git repo it counts that repo only
+  let projectRoot = null;
+  if (o.project) projectRoot = resolveProject(o.project);
+  else if (o.badge && !o.allProjects) projectRoot = gitRoot(process.cwd());
+  const project = projectRoot ? projectMatcher(projectRoot) : null;
   if (o.agents) {
     const unknown = o.agents.filter((a) => !readers.some((r) => r.id === a));
     if (unknown.length) {
@@ -93,14 +115,18 @@ export async function main(argv = process.argv.slice(2)) {
     }
   }
 
-  const [scan, prices] = await Promise.all([readAll({ sinceMs: period.sinceMs, untilMs: period.untilMs }, o.agents), loadPrices({ offline: o.offline })]);
+  const [scan, prices] = await Promise.all([readAll({ sinceMs: period.sinceMs, untilMs: period.untilMs, project }, o.agents), loadPrices({ offline: o.offline })]);
   const { agents, totals } = aggregate(scan.events, prices.table, agentNames);
-  const report = { period, printedAt: new Date(), prices, agents, totals, version: VERSION };
+  const report = { period, printedAt: new Date(), prices, agents, totals, version: VERSION, project: projectRoot };
 
   const log = (s) => console.error(s);
   const found = scan.found.map((f) => `${f.name} (${f.detail})`).join(', ');
   log(`found: ${found || 'none'}`);
   if (scan.missing.length) log(`not found: ${scan.missing.join(', ')}`);
+  if (project) {
+    log(`project: ${projectRoot}${o.project ? '' : ' (--badge default inside a git repo; --all-projects counts every project)'}`);
+    if (scan.skipped.length) log(`note: skipped for --project, no per-project attribution: ${scan.skipped.map((s) => `${s.name} (${s.reason})`).join(', ')}`);
+  }
   for (const w of scan.warnings) log(`note: ${w}`);
   if (prices.note) log(`note: ${prices.note}`);
 
@@ -110,10 +136,10 @@ export async function main(argv = process.argv.slice(2)) {
     const badge = buildBadge(report, { cost: o.badgeCost });
     if (badge) {
       for (const n of badge.notes) log(`note: ${n}`);
-      log('note: the badge counts every matching agent log on this machine for the period, not only this repo. Narrow it with --since and --agent.');
+      if (!project) log('note: the badge counts every matching agent log on this machine for the period, not only this repo. Narrow it with --project, --since and --agent.');
       console.log(badge.markdown);
     } else {
-      log('no token usage in this period, so there is no badge to print');
+      log(`no token usage ${project ? 'for this project ' : ''}in this period, so there is no badge to print`);
     }
   } else {
     const color = o.color && process.stdout.isTTY && !process.env.NO_COLOR;
@@ -144,6 +170,7 @@ export function toJson(report, scan) {
   const { period, printedAt, prices, agents, totals } = report;
   return {
     period: { label: period.label, since: period.since?.toISOString() ?? null, until: period.until.toISOString() },
+    project: report.project ? { root: report.project, skipped: scan.skipped || [] } : null,
     generatedAt: printedAt.toISOString(),
     prices: { source: prices.source, fetchedAt: new Date(prices.fetchedAt).toISOString() },
     sources: { found: scan.found, missing: scan.missing },

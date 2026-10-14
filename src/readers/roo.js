@@ -5,9 +5,11 @@ import { globalStorageTasks, loadTaskDirs } from './vscode-tasks.js';
 
 export const id = 'roo-code';
 export const name = 'Roo Code';
+// --project: the task's environment details record the workspace directory.
+export const projectAware = true;
 
-export async function load({ sinceMs = 0, untilMs = Infinity, env = process.env, platform } = {}) {
-  const res = loadTaskDirs(globalStorageTasks(env, platform, 'rooveterinaryinc.roo-cline'), { agent: id, flavor: 'roo', sinceMs, untilMs });
+export async function load({ sinceMs = 0, untilMs = Infinity, env = process.env, platform, project } = {}) {
+  const res = loadTaskDirs(globalStorageTasks(env, platform, 'rooveterinaryinc.roo-cline'), { agent: id, flavor: 'roo', sinceMs, untilMs, project });
   if (!res.found) return { found: false };
   return { found: true, detail: `${res.tasks} task${res.tasks === 1 ? '' : 's'}`, events: res.events };
 }

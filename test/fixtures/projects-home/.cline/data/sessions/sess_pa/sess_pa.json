@@ -1,0 +1,6 @@
+{
+ "provider": "openai",
+ "model": "gpt-5",
+ "cwd": "/work/alpha",
+ "started_at": "2026-09-25T10:00:00Z"
+}

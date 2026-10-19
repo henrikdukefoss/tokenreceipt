@@ -12,7 +12,7 @@ const TOK_W = 6; // tokens column
 const AMT_W = 10; // amount column
 const MAX_MODELS_PER_AGENT = 5;
 
-export const FOOTER_LINES = ['TOKENRECEIPT, OPEN SOURCE', 'MADE BY STANDARD COMPUTE', 'FLAT MONTHLY PLANS FOR AGENT WORKLOADS', 'STANDARDCOMPUTE.COM'];
+export const FOOTER_LINES = ['TOKENRECEIPT, OPEN SOURCE', 'MADE BY STANDARD COMPUTE', 'STANDARDCOMPUTE.COM'];
 
 const seg = (text, tone = 'ink') => ({ text, tone });
 const blank = () => ({ blank: true });
